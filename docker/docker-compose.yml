@@ -1,0 +1,21 @@
+services:
+  nats_bootstrap:
+    image: ${REGISTRY_HOST}/nats-bootstrap
+    build:
+      context: ../src
+      dockerfile: ../docker/Dockerfile
+      cache_from:
+        - type=gha,scope=fixit
+      cache_to:
+        - type=gha,scope=nats-bootstrap,mode=max
+    configs:
+      - source: example
+        target: /app/config.rb
+configs:
+  example:
+    content: |
+      Stream :notam_dev, nats_url: 'nats://192.168.7.83:4222', subjects: 'aftn.notam.*' do
+        max_age '72h'
+        max_message -1
+      end
+
