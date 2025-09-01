@@ -1,7 +1,7 @@
 require 'nats/client'
 
 StreamConfig = NATS::JetStream::API::StreamConfig
-def Stream( name, *opts, &block)
+def JetStream( name, *opts, &block)
   Config.new(name, opts).tap do |cfg|
     cfg.instance_eval(&block) if block
     cfg.apply
