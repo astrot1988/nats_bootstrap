@@ -44,11 +44,6 @@ class RetranslateConfig
 
 end
 
-Retranslate nats_url: 'nats://localhost:4222', upstream_url: 'nats://localhost:4222', from: 'notam_aftn' do
-  subject_prefix 'external'
-end
-
-
 def start_retranslator
   $retranslators.each(&:start)
   sleep
