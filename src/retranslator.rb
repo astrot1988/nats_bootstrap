@@ -6,7 +6,7 @@ STACK_SERVICE_NAME = ENV['STACK_SERVICE_NAME'] || 'service_default'
 DURABLE_PREFIX = "#{STACK_NAME}_#{STACK_SERVICE_NAME}"
 $retranslators = []
 def Retranslate( *opts, &block)
-  RetranslateConfig.new(name, opts).tap do |cfg|
+  RetranslateConfig.new(opts).tap do |cfg|
     cfg.instance_eval(&block) if block
     $retranslators << cfg
   end
@@ -16,20 +16,17 @@ class RetranslateConfig
   attr_accessor :nats_url, :opts
 
   def initialize(opts)
-    @opts = {}
-    opts.first.each { |k, v| send(k,v) }
+    @opts = { **opts.first}
   end
 
   def method_missing(method_name, args) @opts[method_name.to_s] = args; end
 
-  private
-
   def start
     @up_conn = NATS.connect(@upstream_url)
-    @js_up = NATS::IO::JetStream::Context.new(@up_conn)
+    @js_up = NATS::JetStream.new(@up_conn)
     puts "Connected to upstream JetStream: #{@upstream_url}, stream: #{@from}"
     @down_conn = NATS.connect(@nats_url)
-    @js_down = NATS::IO::JetStream::Context.new(@down_conn)
+    @js_down = NATS::JetStream.new(@down_conn)
     puts "Connected to downstream JetStream: #{@nats_url}"
 
     durable = "#{DURABLE_PREFIX}_relay"
