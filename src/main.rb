@@ -1,5 +1,5 @@
 require 'nats/client'
-
+require_relative 'retranslator'
 StreamConfig = NATS::JetStream::API::StreamConfig
 def JetStream( name, *opts, &block)
   Config.new(name, opts).tap do |cfg|
@@ -54,3 +54,4 @@ class Config
 end
 
 load './config.rb'
+start_retranslator
