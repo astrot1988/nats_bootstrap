@@ -1,5 +1,4 @@
 require 'nats/client'
-require_relative 'retranslator'
 
 StreamConfig = NATS::JetStream::API::StreamConfig
 def JetStream( name, *opts, &block)
@@ -15,17 +14,18 @@ class Config
   def initialize(name, opts)
     @opts = { name:}
     opts.first.each { |k, v| send(k,v) }
-    @config = StreamConfig.new @opts
   end
 
-  def method_missing(method_name, args) @opts[method_name.to_s.gsub(/_/,'-')] = args; end
+  def method_missing(method_name, args) @opts[method_name.to_sym] = args; end
   def nats_url(val);     @nats_url = val; end
   def subjects(val);     @opts[:subjects] = Array(val).flatten; end
 
   def apply
     puts 'Apply'
     connect
+    opts = @opts.transform_keys(&:to_sym)
     @jetstream = @conn.jetstream
+    @config = StreamConfig.new({**opts})
     ex = @jetstream.stream_info(@config[:name]) rescue nil
     ex ? update_stream : create_stream
     puts 'Done'
@@ -55,4 +55,3 @@ class Config
 end
 
 load './config.rb'
-start_retranslator
